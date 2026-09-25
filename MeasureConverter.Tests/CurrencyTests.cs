@@ -108,9 +108,11 @@ public class CurrencyTests
 
         // Act
         Action act = () =>
-            new Currency(
+        {
+            _ = new Currency(
                 baseCurrency!,
                 rateProviderMock.Object);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);
@@ -149,9 +151,11 @@ public class CurrencyTests
 
         // Act
         Action act = () =>
-            new Currency(
+        {
+            _ = new Currency(
                 "DKK",
                 rateProvider!);
+        };
 
         // Assert
         Assert.Throws<ArgumentNullException>(act);

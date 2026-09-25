@@ -44,10 +44,16 @@ public class LengthTests
     
     [Theory]
     [InlineData(-0.01)]
-    public void Constructor_MeasureBelowBoundary_ThrowsArgumentException(double measure)
+    public void Constructor_MeasureBelowBoundary_ThrowsArgumentException(
+        double measure)
     {
         // Act
-        Action act = () => new Length(measure, MeasurementSystem.Metric);
+        Action act = () =>
+        {
+            _ = new Length(
+                measure,
+                MeasurementSystem.Metric);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);
@@ -74,10 +80,16 @@ public class LengthTests
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]
     [InlineData(double.NegativeInfinity)]
-    public void Constructor_NonFiniteMeasure_ThrowsArgumentException(double measure)
+    public void Constructor_NonFiniteMeasure_ThrowsArgumentException(
+        double measure)
     {
         // Act
-        Action act = () => new Length(measure, MeasurementSystem.Metric);
+        Action act = () =>
+        {
+            _ = new Length(
+                measure,
+                MeasurementSystem.Metric);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);

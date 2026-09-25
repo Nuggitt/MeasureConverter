@@ -133,7 +133,9 @@ public class GradeTests
 
         // Act
         Action act = () =>
-            new Grade(repository!);
+        {
+            _ = new Grade(repository!);
+        };
 
         // Assert
         Assert.Throws<ArgumentNullException>(act);

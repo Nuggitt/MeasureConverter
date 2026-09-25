@@ -154,7 +154,12 @@ public class TemperatureTests
         TemperatureScale scale)
     {
         // Act
-        Action act = () => new Temperature(measure, scale);
+        Action act = () =>
+        {
+            _ = new Temperature(
+                measure,
+                scale);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);
@@ -236,7 +241,12 @@ public class TemperatureTests
         TemperatureScale scale)
     {
         // Act
-        Action act = () => new Temperature(measure, scale);
+        Action act = () =>
+        {
+            _ = new Temperature(
+                measure,
+                scale);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);

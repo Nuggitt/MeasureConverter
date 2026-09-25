@@ -51,7 +51,12 @@ public class WeightTests
         MeasurementSystem system)
     {
         // Act
-        Action act = () => new Weight(measure, system);
+        Action act = () =>
+        {
+            _ = new Weight(
+                measure,
+                system);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);
@@ -106,7 +111,12 @@ public class WeightTests
         MeasurementSystem system)
     {
         // Act
-        Action act = () => new Weight(measure, system);
+        Action act = () =>
+        {
+            _ = new Weight(
+                measure,
+                system);
+        };
 
         // Assert
         Assert.Throws<ArgumentException>(act);
