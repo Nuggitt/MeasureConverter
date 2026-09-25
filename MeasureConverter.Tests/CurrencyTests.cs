@@ -100,8 +100,12 @@ public class CurrencyTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("DK")]
+    [InlineData("DKKK")]
+    [InlineData("123")]
+    [InlineData("D1K")]
     public void Constructor_InvalidBaseCurrency_ThrowsArgumentException(
-        string? baseCurrency)
+    string? baseCurrency)
     {
         // Arrange
         Mock<ICurrencyRateProvider> rateProviderMock = new();
@@ -123,14 +127,20 @@ public class CurrencyTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
+    [InlineData("EU")]
+    [InlineData("EURO")]
+    [InlineData("123")]
+    [InlineData("E1R")]
     public async Task ConvertAsync_InvalidDestinationCurrency_ThrowsArgumentException(
-        string? destinationCurrency)
+     string? destinationCurrency)
     {
         // Arrange
         Mock<ICurrencyRateProvider> rateProviderMock = new();
 
         Currency currency =
-            new Currency("DKK", rateProviderMock.Object);
+            new Currency(
+                "DKK",
+                rateProviderMock.Object);
 
         // Act
         Func<Task> act = () =>

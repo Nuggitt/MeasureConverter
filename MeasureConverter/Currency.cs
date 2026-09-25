@@ -9,12 +9,9 @@ public class Currency
         string baseCurrency,
         ICurrencyRateProvider rateProvider)
     {
-        if (string.IsNullOrWhiteSpace(baseCurrency))
-        {
-            throw new ArgumentException(
-                "Base currency is required.",
-                nameof(baseCurrency));
-        }
+        ValidateCurrencyCode(
+            baseCurrency,
+            nameof(baseCurrency));
 
         ArgumentNullException.ThrowIfNull(rateProvider);
 
@@ -35,17 +32,28 @@ public class Currency
                 nameof(amount));
         }
 
-        if (string.IsNullOrWhiteSpace(destinationCurrency))
-        {
-            throw new ArgumentException(
-                "Destination currency is required.",
-                nameof(destinationCurrency));
-        }
+        ValidateCurrencyCode(
+            destinationCurrency,
+            nameof(destinationCurrency));
 
         double rate = await _rateProvider.GetRateAsync(
             _baseCurrency,
             destinationCurrency);
 
         return Math.Round(amount * rate, 2);
+    }
+
+    private static void ValidateCurrencyCode(
+        string currencyCode,
+        string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(currencyCode) ||
+            currencyCode.Length != 3 ||
+            !currencyCode.All(char.IsLetter))
+        {
+            throw new ArgumentException(
+                "Currency code must contain exactly three letters.",
+                parameterName);
+        }
     }
 }
