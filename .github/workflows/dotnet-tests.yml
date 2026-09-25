@@ -1,4 +1,4 @@
-name: .NET Tests
+name: .NET Tests and SonarQube
 
 on:
   push:
@@ -9,16 +9,19 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 jobs:
   test:
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -32,3 +35,74 @@ jobs:
         env:
           CURRENCY_API_KEY: ${{ secrets.CURRENCY_API_KEY }}
         run: dotnet test MeasureConverter.slnx --no-build --verbosity normal
+
+  sonarqube:
+    name: SonarQube
+    needs: test
+
+    # SonarQube køres kun ved manuel start,
+    # så din bærbare ikke behøver være online ved hvert push.
+    if: github.event_name == 'workflow_dispatch'
+
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore MeasureConverter.slnx
+
+      - name: Update SonarScanner
+        shell: powershell
+        run: dotnet tool update --global dotnet-sonarscanner
+
+      - name: Clean previous coverage
+        shell: powershell
+        run: Remove-Item -Recurse -Force .\SonarCoverage -ErrorAction SilentlyContinue
+
+      - name: Begin SonarQube analysis
+        shell: powershell
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          dotnet sonarscanner begin `
+            /k:"MeasureConverter" `
+            /d:sonar.host.url="$env:SONAR_HOST_URL" `
+            /d:sonar.token="$env:SONAR_TOKEN" `
+            /d:sonar.qualitygate.wait=true `
+            /d:sonar.cs.opencover.reportsPaths="SonarCoverage/**/coverage.opencover.xml" `
+            /d:sonar.exclusions="CoverageReport/**,TestResults/**,SonarCoverage/**,**/bin/**,**/obj/**"
+
+      - name: Build for SonarQube
+        run: dotnet build MeasureConverter.slnx --no-incremental --no-restore
+
+      - name: Run tests with coverage
+        shell: powershell
+        env:
+          CURRENCY_API_KEY: ${{ secrets.CURRENCY_API_KEY }}
+        run: |
+          dotnet test MeasureConverter.slnx `
+            --no-build `
+            --collect:"XPlat Code Coverage" `
+            --results-directory .\SonarCoverage `
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: End SonarQube analysis
+        shell: powershell
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner end `
+            /d:sonar.token="$env:SONAR_TOKEN"
