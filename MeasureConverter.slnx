@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="MeasureConverter.IntegrationTests/MeasureConverter.IntegrationTests.csproj" />
+  <Project Path="MeasureConverter.Tests/MeasureConverter.Tests.csproj" />
+  <Project Path="MeasureConverter/MeasureConverter.csproj" />
+</Solution>
