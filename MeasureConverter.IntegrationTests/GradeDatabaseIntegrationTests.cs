@@ -19,7 +19,7 @@ public class GradeDatabaseIntegrationTests
                 $"grades-{Guid.NewGuid()}.db");
 
         string connectionString =
-            $"Data Source={databasePath}";
+            $"Data Source={databasePath};Pooling=False";
 
         await GradeDatabaseInitializer.InitializeAsync(
             connectionString);
