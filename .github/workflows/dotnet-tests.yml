@@ -40,8 +40,8 @@ jobs:
     name: SonarQube
     needs: test
 
-    # SonarQube køres kun ved manuel start,
-    # så din bærbare ikke behøver være online ved hvert push.
+    # SonarQube køres kun ved manuel start.
+    # Bærbaren behøver derfor ikke være online ved hvert push.
     if: github.event_name == 'workflow_dispatch'
 
     runs-on:
@@ -55,21 +55,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: '10.0.x'
+      # .NET 10 er allerede installeret på den self-hosted runner.
 
       - name: Restore dependencies
         run: dotnet restore MeasureConverter.slnx
 
-      - name: Update SonarScanner
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: |
+            ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
-        run: dotnet tool update --global dotnet-sonarscanner
+        run: |
+          New-Item -Path "${{ runner.temp }}\scanner" -ItemType Directory -Force
+          dotnet tool install dotnet-sonarscanner --tool-path "${{ runner.temp }}\scanner"
 
       - name: Clean previous coverage
         shell: powershell
-        run: Remove-Item -Recurse -Force .\SonarCoverage -ErrorAction SilentlyContinue
+        run: |
+          Remove-Item -Recurse -Force .\SonarCoverage -ErrorAction SilentlyContinue
 
       - name: Begin SonarQube analysis
         shell: powershell
@@ -77,7 +87,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          dotnet sonarscanner begin `
+          & "${{ runner.temp }}\scanner\dotnet-sonarscanner.exe" begin `
             /k:"MeasureConverter" `
             /d:sonar.host.url="$env:SONAR_HOST_URL" `
             /d:sonar.token="$env:SONAR_TOKEN" `
@@ -104,5 +114,5 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          dotnet sonarscanner end `
+          & "${{ runner.temp }}\scanner\dotnet-sonarscanner.exe" end `
             /d:sonar.token="$env:SONAR_TOKEN"
